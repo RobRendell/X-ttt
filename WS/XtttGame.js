@@ -104,6 +104,15 @@ function onClientDisconnect() {
 // ----	--------------------------------------------	--------------------------------------------	
 // ----	--------------------------------------------	--------------------------------------------	
 
+function onClientResetGame() {
+
+	if (this.player && this.player.opp) {
+		io.to(this.player.sockid).emit("reset_game");
+		io.to(this.player.opp.sockid).emit("reset_game");
+	}
+
+}
+
 // ----	--------------------------------------------	--------------------------------------------	
 // ----	--------------------------------------------	--------------------------------------------	
 
@@ -116,5 +125,7 @@ set_game_sock_handlers = function (socket) {
 	socket.on("ply_turn", onTurn);
 
 	socket.on("disconnect", onClientDisconnect);
+
+	socket.on("reset_game", onClientResetGame);
 
 };

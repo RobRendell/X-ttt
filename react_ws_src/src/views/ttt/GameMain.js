@@ -26,13 +26,15 @@ export default class SetName extends Component {
 		]
 
 
-		if (this.props.game_type != 'live')
+		if (this.props.game_type !== 'live')
 			this.state = {
 				cell_vals: {},
 				next_turn_ply: true,
 				my_token: 'x',
 				game_play: true,
-				game_stat: 'Start game'
+				game_stat: 'Start game',
+				opponent: null,
+				first_player: 'x'
 			}
 		else {
 			this.sock_start()
@@ -40,9 +42,11 @@ export default class SetName extends Component {
 			this.state = {
 				cell_vals: {},
 				next_turn_ply: true,
-				my_token: 'x',
+				my_token: '',
 				game_play: false,
-				game_stat: 'Connecting'
+				game_stat: 'Connecting',
+				opponent: null,
+				first_player: 'x'
 			}
 		}
 	}
@@ -76,7 +80,8 @@ export default class SetName extends Component {
 				next_turn_ply: firstPlayer,
 				my_token: firstPlayer ? 'x' : 'o',
 				game_play: true,
-				game_stat: 'Playing with ' + data.opp.name
+				game_stat: 'Playing with ' + data.opp.name,
+				opponent: data.opp.name
 			})
 
 		}.bind(this));
@@ -95,6 +100,28 @@ export default class SetName extends Component {
 				game_stat: 'Other player disconnected.',
 				game_play: false
 			});
+		}.bind(this));
+
+		this.socket.on('reset_game', function() {
+
+			const set = this.get_win_set();
+
+			if (set) {
+				for (const id of set) {
+					this.refs[id].classList.remove('win');
+				}
+			}
+
+			// Swap first player.
+			const firstPlayerToken = this.state.first_player === 'x' ? 'o' : 'x';
+			this.setState({
+				cell_vals: {},
+				next_turn_ply: this.state.my_token === firstPlayerToken,
+				game_play: true,
+				game_stat: 'Playing with ' + this.state.opponent,
+				first_player: firstPlayerToken
+			});
+
 		}.bind(this));
 
 	}
@@ -156,7 +183,17 @@ export default class SetName extends Component {
 					</table>
 				</div>
 
-				<button type='submit' onClick={this.end_game.bind(this)} className='button'><span>End Game <span className='fa fa-caret-right'></span></span></button>
+				<div className='button_bar'>
+					<button type='submit' onClick={this.end_game.bind(this)} className='button'><span>End Game <span className='fa fa-caret-right'></span></span></button>
+
+					{
+						this.props.game_type !== 'live' ? null : (
+							<button type='submit' disabled={game_play || !this.state.my_token} onClick={this.new_game.bind(this)} className='button'><span>Play Again</span></button>
+						)
+					}
+
+				</div>
+
 
 			</div>
 		)
@@ -284,28 +321,34 @@ export default class SetName extends Component {
 
 //	------------------------	------------------------	------------------------
 //	------------------------	------------------------	------------------------
+
+	get_win_set() {
+		const { cell_vals } = this.state
+
+		for (let i= 0; i < this.win_sets.length; i++) {
+			const set = this.win_sets[i]
+			if (cell_vals[set[0]] && cell_vals[set[0]] === cell_vals[set[1]] && cell_vals[set[0]] === cell_vals[set[2]]) {
+				return set;
+			}
+		}
+
+		return undefined;
+	}
+
 //	------------------------	------------------------	------------------------
 
 	check_turn () {
 
 		const { cell_vals, my_token } = this.state
 
-		let win = false
-		let set
+		const set = this.get_win_set();
+		const win = (set !== undefined);
 		let fin = true
 
-		if (this.props.game_type!='live')
+		if (this.props.game_type !== 'live')
 			this.state.game_stat = 'Play'
 
-
-		for (let i=0; !win && i<this.win_sets.length; i++) {
-			set = this.win_sets[i]
-			if (cell_vals[set[0]] && cell_vals[set[0]]==cell_vals[set[1]] && cell_vals[set[0]]==cell_vals[set[2]])
-				win = true
-		}
-
-
-		for (let i=1; i<=9; i++) 
+		for (let i=1; i<=9; i++)
 			!cell_vals['c'+i] && (fin = false)
 
 		// win && console.log('win set: ', set)
@@ -324,16 +367,12 @@ export default class SetName extends Component {
 				game_play: false
 			})
 
-			this.socket && this.socket.disconnect();
-
 		} else if (fin) {
 		
 			this.setState({
 				game_stat: 'Draw',
 				game_play: false
 			})
-
-			this.socket && this.socket.disconnect();
 
 		} else {
 			this.props.game_type!='live' && this.state.next_turn_ply && setTimeout(this.turn_comp.bind(this), rand_to_fro(500, 1000));
@@ -343,6 +382,12 @@ export default class SetName extends Component {
 			})
 		}
 		
+	}
+
+//	------------------------	------------------------	------------------------
+
+	new_game() {
+		this.socket.emit('reset_game');
 	}
 
 //	------------------------	------------------------	------------------------
