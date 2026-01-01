@@ -143,13 +143,13 @@ section#TTT_game{
 			vertical-align: middle;
 			text-align: center;
 
-			&:hover{
-				background: #ff0;
-			}
-
 			&.win {
 				background: #f00;
 			}
+		}
+
+		&.my_turn td:hover {
+			background: #ff0;
 		}
 
 		.vbrd {

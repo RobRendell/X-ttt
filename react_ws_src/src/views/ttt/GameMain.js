@@ -121,7 +121,7 @@ export default class SetName extends Component {
 //	------------------------	------------------------	------------------------
 
 	render () {
-		const { cell_vals } = this.state
+		const { game_stat, next_turn_ply, game_play } = this.state
 		// console.log(cell_vals)
 
 		return (
@@ -130,11 +130,11 @@ export default class SetName extends Component {
 				<h1>Play {this.props.game_type}</h1>
 
 				<div id="game_stat">
-					<div id="game_stat_msg">{this.state.game_stat}</div>
-					{this.state.game_play && <div id="game_turn_msg">{this.state.next_turn_ply ? 'Your turn' : 'Opponent turn'}</div>}
+					<div id="game_stat_msg">{game_stat}</div>
+					{game_play && <div id="game_turn_msg">{next_turn_ply ? 'Your turn' : 'Opponent\'s turn'}</div>}
 				</div>
 
-				<div id="game_board">
+				<div id="game_board" className={game_play && next_turn_ply ? 'my_turn' : ''}>
 					<table>
 					<tbody>
 						<tr>
