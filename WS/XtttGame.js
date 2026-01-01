@@ -79,8 +79,12 @@ function onClientDisconnect() {
 
 	var removePlayer = this.player;
 	players.splice(players.indexOf(removePlayer), 1);
-	players_avail.splice(players_avail.indexOf(removePlayer), 1);
 
+	const avail_index = players_avail.indexOf(removePlayer);
+	if (avail_index >= 0) {
+		// If the disconnecting player was looking for a game, remove them from the available players.
+		players_avail.splice(avail_index, 1);
+	}
 
 	if (this.status == "admin") {
 		util.log("Admin has disconnected: "+this.uid);
