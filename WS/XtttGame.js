@@ -90,6 +90,11 @@ function onClientDisconnect() {
 //		updAdmin("player disconnected - uid:"+removePlayer.uid + "  --  "+removePlayer.name);
 	}
 
+	if (removePlayer.opp) {
+		io.to(removePlayer.opp.sockid).emit("pair_disconnect");
+		removePlayer.opp.opp = null;
+	}
+
 };
 
 // ----	--------------------------------------------	--------------------------------------------	

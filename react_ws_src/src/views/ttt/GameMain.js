@@ -66,7 +66,7 @@ export default class SetName extends Component {
 
 		}.bind(this));
 
-		this.socket.on('pair_players', function(data) { 
+		this.socket.on('pair_players', function(data) {
 			// console.log('paired with ', data)
 
 			this.setState({
@@ -86,6 +86,12 @@ export default class SetName extends Component {
 			});
 		}.bind(this));
 
+		this.socket.on('pair_disconnect', function() {
+			this.setState({
+				game_stat: 'Other player disconnected.',
+				game_play: false
+			});
+		}.bind(this));
 
 	}
 
