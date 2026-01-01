@@ -1,1 +1,6 @@
 .svn/
+
+# project files
+.idea
+*.iml
+.vscode
