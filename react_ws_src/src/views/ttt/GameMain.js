@@ -30,6 +30,7 @@ export default class SetName extends Component {
 			this.state = {
 				cell_vals: {},
 				next_turn_ply: true,
+				my_token: 'x',
 				game_play: true,
 				game_stat: 'Start game'
 			}
@@ -39,6 +40,7 @@ export default class SetName extends Component {
 			this.state = {
 				cell_vals: {},
 				next_turn_ply: true,
+				my_token: 'x',
 				game_play: false,
 				game_stat: 'Connecting'
 			}
@@ -69,8 +71,10 @@ export default class SetName extends Component {
 		this.socket.on('pair_players', function(data) {
 			// console.log('paired with ', data)
 
+			const firstPlayer = data.mode === 'm';
 			this.setState({
-				next_turn_ply: data.mode=='m',
+				next_turn_ply: firstPlayer,
+				my_token: firstPlayer ? 'x' : 'o',
 				game_play: true,
 				game_stat: 'Playing with ' + data.opp.name
 			})
@@ -234,9 +238,9 @@ export default class SetName extends Component {
 
 	turn_ply_live (cell_id) {
 
-		let { cell_vals } = this.state
+		let { cell_vals, my_token } = this.state
 
-		cell_vals[cell_id] = 'x'
+		cell_vals[cell_id] = my_token;
 
 		TweenMax.from(this.refs[cell_id], 0.7, {opacity: 0, scaleX:0, scaleY:0, ease: Power4.easeOut})
 
@@ -258,12 +262,12 @@ export default class SetName extends Component {
 
 	turn_opp_live (data) {
 
-		let { cell_vals } = this.state
+		let { cell_vals, my_token } = this.state
 		let empty_cells_arr = []
 
 
 		const c = data.cell_id
-		cell_vals[c] = 'o'
+		cell_vals[c] = my_token === 'x' ? 'o' : 'x';
 
 		TweenMax.from(this.refs[c], 0.7, {opacity: 0, scaleX:0, scaleY:0, ease: Power4.easeOut})
 
@@ -284,7 +288,7 @@ export default class SetName extends Component {
 
 	check_turn () {
 
-		const { cell_vals } = this.state
+		const { cell_vals, my_token } = this.state
 
 		let win = false
 		let set
@@ -316,7 +320,7 @@ export default class SetName extends Component {
 			TweenMax.from('td.win', 1, {opacity: 0, ease: Linear.easeIn})
 
 			this.setState({
-				game_stat: (cell_vals[set[0]]=='x'?'You':'Opponent')+' win',
+				game_stat: cell_vals[set[0]] === my_token ? 'You win' : 'Opponent wins',
 				game_play: false
 			})
 
