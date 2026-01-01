@@ -80,6 +80,11 @@ export default class SetName extends Component {
 
 		this.socket.on('opp_turn', this.turn_opp_live.bind(this));
 
+		this.socket.on('connect_error', function() {
+			this.setState({
+				game_stat: 'Connection error, live play not available.'
+			});
+		}.bind(this));
 
 
 	}
